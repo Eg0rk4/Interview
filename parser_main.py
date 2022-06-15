@@ -1,3 +1,4 @@
+import re
 import time
 from selenium import webdriver
 from selenium.webdriver import Chrome
@@ -6,11 +7,11 @@ from selenium.webdriver.common.by import By
 import os
 import requests
 from bs4 import BeautifulSoup
-
+from termcolor import cprint
 
 web_link = 'https://bashesk.ru/corporate/tariffs/unregulated/'
-
-
+search_str = 'Предельные уровни нерегулируемых цен на электрическую энергию (мощность), поставляемую потребителям (покупателям) ООО "ЭСКБ", (с максимальной мощностью энергопринимающих устройств до 670 кВт) '
+search_str = search_str.replace('(', '').replace(')', '')  # Не знаю почему, но когда в строках были символы (), поиск не работал
 path = os.path.normpath('C:/WebDrivers/chromedriver.exe')
 
 
@@ -60,19 +61,29 @@ class Parser:
     def start_search(self):
         self.driver.find_element(by=By.CLASS_NAME, value='btn-blue').click()
         time.sleep(2)
-        files = []
-        files.append(self.driver.find_elements(by=By.CLASS_NAME, value='col-2'))
-        try:
-            while True:
-                files.append(self._find_values())
-        except EOFError as exc:
-            print(exc)
+        files = {}
 
-        finally:
-            for lst in files:
-                for value in lst:
-                    self.docs.append(value.find_element(by=By.TAG_NAME, value='a').get_attribute('href'))
-            return self.docs
+        table = self.driver.find_element(by=By.CLASS_NAME, value='news-list')
+        results = table.find_elements(by=By.CLASS_NAME, value='row')
+        for value in results:
+            if re.search(search_str, value.text.replace('(', '').replace(')', '')):
+                file = value.find_element(by=By.CLASS_NAME, value='col-2')
+                link = file.find_element(by=By.TAG_NAME, value='a').get_attribute('href')
+                files[value.text[:len(value.text)-17]] = link
+
+        return files
+
+        # try:
+        #     while True:
+        #         files.append(self._find_values())
+        # except EOFError as exc:
+        #     print(exc)
+        #
+        # finally:
+        #     for lst in files:
+        #         for value in lst:
+        #             self.docs.append(value.find_element(by=By.TAG_NAME, value='a').get_attribute('href'))
+        #     return self.docs
 
     def _find_values(self):
         try:
@@ -108,9 +119,9 @@ with Parser(path) as web_driver:
     web_driver.set_start_date('01.07.2019')
     web_driver.set_end_date('01.07.2020')
     docs = web_driver.start_search()
-    for item in docs:
-        print(item)
-        # response = requests.get(item)
-        # with open('Parsed_docs/')
-        # print(item)
+    for key, item in docs.items():
+        print(f'{key}: {item}')
+        response = requests.get(item)
+        with open(f'Parsed_docs/{key}.{item[len(item)-3:]}', mode='w', encoding='utf-8') as file:
+
 

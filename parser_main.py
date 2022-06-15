@@ -13,7 +13,8 @@ web_link = 'https://bashesk.ru/corporate/tariffs/unregulated/'
 search_str = 'Предельные уровни нерегулируемых цен на электрическую энергию (мощность), поставляемую потребителям (покупателям) ООО "ЭСКБ", (с максимальной мощностью энергопринимающих устройств до 670 кВт) '
 search_str = search_str.replace('(', '').replace(')', '')  # Не знаю почему, но когда в строках были символы (), поиск не работал
 path = os.path.normpath('C:/WebDrivers/chromedriver.exe')
-
+preferences = {'download.default_directory': f'{os.path.normpath("C:/Users/Egor-/Desktop/Барабаш/Собес/Parsed_docs")}',
+               'safebrowsing.enabled': 'false'}
 
 class Parser:
 
@@ -34,6 +35,7 @@ class Parser:
         options = webdriver.ChromeOptions()
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36')
         options.add_argument('--disable-blink-features=AutomationControlled')
+        options.add_experimental_option('prefs', preferences)
         # options.add_argument('--headless')
         service = Service(executable_path=self.driver_path)
         driver = Chrome(service=service, options=options)
@@ -121,7 +123,9 @@ with Parser(path) as web_driver:
     docs = web_driver.start_search()
     for key, item in docs.items():
         print(f'{key}: {item}')
-        response = requests.get(item)
-        with open(f'Parsed_docs/{key}.{item[len(item)-3:]}', mode='w', encoding='utf-8') as file:
+        web_driver.go_to_web(item)
+        print('Downloaded!')
+        # response = requests.get(item)
+        # with open(f'Parsed_docs/{key}.{item[len(item)-3:]}', mode='w', encoding='utf-8') as file:
 
 

@@ -5,8 +5,6 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import os
-import requests
-from bs4 import BeautifulSoup
 from termcolor import cprint
 
 web_link = 'https://bashesk.ru/corporate/tariffs/unregulated/'
@@ -15,6 +13,7 @@ search_str = search_str.replace('(', '').replace(')', '')  # Не знаю по�
 path = os.path.normpath('C:/WebDrivers/chromedriver.exe')
 preferences = {'download.default_directory': f'{os.path.normpath("C:/Users/Egor-/Desktop/Барабаш/Собес/Parsed_docs")}',
                'safebrowsing.enabled': 'false'}
+
 
 class Parser:
 
@@ -125,7 +124,6 @@ with Parser(path) as web_driver:
         print(f'{key}: {item}')
         web_driver.go_to_web(item)
         print('Downloaded!')
-        # response = requests.get(item)
-        # with open(f'Parsed_docs/{key}.{item[len(item)-3:]}', mode='w', encoding='utf-8') as file:
+
 
 

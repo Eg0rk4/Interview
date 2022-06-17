@@ -19,7 +19,7 @@ class Parser:
 
     def __init__(self, driver_path):
         self.driver_path = driver_path
-        self.docs = []
+        self.files = {}
 
     def __enter__(self):
         self.driver = self._create_driver()
@@ -62,56 +62,41 @@ class Parser:
     def start_search(self):
         self.driver.find_element(by=By.CLASS_NAME, value='btn-blue').click()
         time.sleep(2)
-        files = {}
-
+        self.files = {}
         table = self.driver.find_element(by=By.CLASS_NAME, value='news-list')
         results = table.find_elements(by=By.CLASS_NAME, value='row')
+        self.prepare_to_download(results)
+        self._find_values()
+
+    def _find_values(self):
+        while True:
+            next_page = self.driver.find_element(by=By.CLASS_NAME, value='next')
+
+            try:
+                last_page = self.driver.find_element(by=By.CLASS_NAME, value="next.disabled")
+                if last_page:
+                    time.sleep(2)
+                    table = self.driver.find_element(by=By.CLASS_NAME, value='news-list')
+                    results = table.find_elements(by=By.CLASS_NAME, value='row')
+                    self.prepare_to_download(results)
+                    print('Last page!')
+                    break
+            except Exception:
+                pass
+
+            if next_page:
+                next_page.click()
+                time.sleep(2)
+                table = self.driver.find_element(by=By.CLASS_NAME, value='news-list')
+                results = table.find_elements(by=By.CLASS_NAME, value='row')
+                self.prepare_to_download(results)
+
+    def prepare_to_download(self, results):
         for value in results:
             if re.search(search_str, value.text.replace('(', '').replace(')', '')):
                 file = value.find_element(by=By.CLASS_NAME, value='col-2')
                 link = file.find_element(by=By.TAG_NAME, value='a').get_attribute('href')
-                files[value.text[:len(value.text)-17]] = link
-
-        return files
-
-        # try:
-        #     while True:
-        #         files.append(self._find_values())
-        # except EOFError as exc:
-        #     print(exc)
-        #
-        # finally:
-        #     for lst in files:
-        #         for value in lst:
-        #             self.docs.append(value.find_element(by=By.TAG_NAME, value='a').get_attribute('href'))
-        #     return self.docs
-
-    def _find_values(self):
-        try:
-            next_page = None
-            # next_page = self.driver.find_element(by=By.CLASS_NAME, value='next')
-            last_page = self.driver.find_element(by=By.CLASS_NAME, value='next disabled')
-            if next_page:
-                print('next')
-                next_page.click()
-                time.sleep(2)
-                return self.driver.find_elements(by=By.CLASS_NAME, value='col-2')
-            elif last_page:
-                print('last')
-                raise Exception
-            else:
-                print('end')
-                raise Exception
-        except Exception:
-            raise EOFError
-
-
-
-
-
-
-
-
+                self.files[value.text[:len(value.text) - 17]] = link
 
 
 with Parser(path) as web_driver:
@@ -119,11 +104,8 @@ with Parser(path) as web_driver:
     web_driver.set_filter()
     web_driver.set_start_date('01.07.2019')
     web_driver.set_end_date('01.07.2020')
-    docs = web_driver.start_search()
-    for key, item in docs.items():
-        print(f'{key}: {item}')
+    web_driver.start_search()
+    for key, item in web_driver.files.items():
+        # print(f'{key}: {item}')
         web_driver.go_to_web(item)
-        print('Downloaded!')
-
-
-
+    print('Downloaded!')

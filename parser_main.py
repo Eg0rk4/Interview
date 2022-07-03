@@ -5,14 +5,18 @@ from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 import os
-from termcolor import cprint
 
+"""Задаем необходимые ссылки и доп параметры"""
 web_link = 'https://bashesk.ru/corporate/tariffs/unregulated/'
 search_str = 'Предельные уровни нерегулируемых цен на электрическую энергию (мощность), поставляемую потребителям (покупателям) ООО "ЭСКБ", (с максимальной мощностью энергопринимающих устройств до 670 кВт) '
 search_str = search_str.replace('(', '').replace(')', '')  # Не знаю почему, но когда в строках были символы (), поиск не работал
-path = os.path.normpath('C:/WebDrivers/chromedriver.exe')
-preferences = {'download.default_directory': f'{os.path.normpath("C:/Users/Egor-/Desktop/Барабаш/Собес/Parsed_docs")}',
-               'safebrowsing.enabled': 'false'}
+
+path = os.path.normpath(f'{os.getcwd()}/web_driver/chromedriver.exe')  # путь к веб драйверу
+# Создаем папку, в которой будут сохранены файлы
+dir_to_save = os.path.normpath(f'{os.getcwd()}/downloads')
+if not os.path.exists(dir_to_save):
+    os.mkdir(dir_to_save)
+preferences = {'download.default_directory': f'{os.path.normpath(dir_to_save)}', 'safebrowsing.enabled': 'false'}
 
 
 class Parser:
@@ -35,7 +39,7 @@ class Parser:
         options.add_argument('user-agent=Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.51 Safari/537.36')
         options.add_argument('--disable-blink-features=AutomationControlled')
         options.add_experimental_option('prefs', preferences)
-        # options.add_argument('--headless')
+        options.add_argument('--headless')
         service = Service(executable_path=self.driver_path)
         driver = Chrome(service=service, options=options)
         driver.maximize_window()
@@ -79,7 +83,6 @@ class Parser:
                     table = self.driver.find_element(by=By.CLASS_NAME, value='news-list')
                     results = table.find_elements(by=By.CLASS_NAME, value='row')
                     self.prepare_to_download(results)
-                    print('Last page!')
                     break
             except Exception:
                 pass
@@ -108,4 +111,6 @@ with Parser(path) as web_driver:
     for key, item in web_driver.files.items():
         # print(f'{key}: {item}')
         web_driver.go_to_web(item)
+        time.sleep(1)
     print('Downloaded!')
+    print('See your files in "downloads" directory')

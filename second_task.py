@@ -1,5 +1,5 @@
 import openpyxl
-
+# В репозитории есть файл some_excel.xlsx, в нем сохранены данные из примера в задании
 
 class Tree:
 

@@ -23,25 +23,25 @@ class Tree:
                 print(lists)
 
     def grow_tree(self, *classificators):
-        print('Root', end='\n-----------------\n')
+        print(f'{"Root": ^55}')
         for clss in classificators:
             if clss in self.excel_values.keys():
-                for branch in self.excel_values[clss]:
-                    print(branch, end='---')
-                print('\n----------------------')
+                print('{}  {}  {}'.format(*self.excel_values[clss]).center(55))
             else:
                 raise ValueError(f'No such classificator "{clss}" in excel file!')
-        for val in self.excel_values['объект']:
-            print(val, end='---')
-        print('\n')
+        print('{}  {}  {}'.format(*self.excel_values['объект']).center(55))
+
+        print(f'{"":~^55}')
 
 
-tree = Tree()
-# tree.get_children(['one', 'two', 'three', 'four'])
-# tree.get_children(['first', 'second'], ['third', 'fourth'], ['5th', '6th'])
-tree.get_data_from_excel()
-print(tree.excel_values)
-tree.grow_tree('классификатор1', 'классификатор2')
-tree.grow_tree('классификатор2', 'классификатор1')
-tree.grow_tree('классификатор1')
+if __name__ == '__main__':
+
+    tree = Tree()
+    # tree.get_children(['one', 'two', 'three', 'four'])  # Вызывает ошибку
+    tree.get_children(['first', 'second'], ['third', 'fourth'], ['5th', '6th'])
+    tree.get_data_from_excel()
+    print(tree.excel_values)
+    tree.grow_tree('классификатор1', 'классификатор2')
+    tree.grow_tree('классификатор2', 'классификатор1')
+    tree.grow_tree('классификатор1')
 
